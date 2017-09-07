@@ -11,14 +11,15 @@
     
 /*    if(isset($json_post['username'])) $username = MCrypt::decrypt($json_post['username']);
     if(isset($json_post['password'])) $password = MCrypt::decrypt($json_post['password']);*/
-    
+         
     if(isset($json_post['username'])) $username = $json_post['username'];
     if(isset($json_post['password'])) $password = $json_post['password'];
     
     switch($type)   {
-        case "login":       login_function($username, $password, $output_array); break;
-        case "register":    register_function($username, $password, $output_array); break;
-            
+        case "login":                   login_function($username, $password, $output_array); break;
+        case "register":                register_function($username, $password, $output_array); break;
+        case "get_all_users":           get_all_users_function($output_array); break;  
+        case "get_status_message":      get_status_message($output_array); break;  
     }
     
     function login_function($username, $password, $output_array)   {
@@ -31,11 +32,11 @@
             $username_db       = $result_query['username'];   
             $password_db       = $result_query['password'];
             
-            $output_array      = array("id_user" => $id_user_db, "username" => $username_db, "password" => $password_db, "success" => 1, "message" => "Username Found" );
+            $output_array      = array("id_user" => $id_user_db, "username" => $username_db, "password" => $password_db, "success" => 1, "message" => "Username Found", "user_status" => "Test status" );
         }
         
         if(count($output_array) == 0)
-            $output_array   = array("id_user" => 0 ,"username" => "", "password" => "", "success" => "0", "message" => "Username Not Found" );
+            $output_array   = array("id_user" => 0 ,"username" => "", "password" => "", "success" => "0", "message" => "Username Not Found", "user_status" => "" );
             
         echo json_encode($output_array);
         exit();   
@@ -44,7 +45,7 @@
     function register_function($username, $password, $output_array)   {
         global $con;
         
-        $insert_query       = mysqli_query($con, " INSERT INTO `users`( `id_user`, `username`, `password` ) VALUES ( '', '".$username."', '".$password."' ) ");
+        $insert_query       = mysqli_query($con, " INSERT INTO `users`( `id_user`, `username`, `password` ) VALUES ( '', '".$username."', '".MD5($password)."' ) ");
         
         if($insert_query)
             $output_array   = array("success" => "1", "message" => "Username successfully created!" );
@@ -53,5 +54,23 @@
             
         echo json_encode($output_array);
         exit();   
+    }
+    
+    function get_all_users_function($output_array)  {
+        
+        $path   = 'mc_freddie_color_web.png';
+        $base64 = base64_encode($path);
+        
+        $imagedata = file_get_contents("mc_freddie_color_web.png");
+                     // alternatively specify an URL, if PHP settings allow
+        $base64 = base64_encode($imagedata);        
+        
+        for($i = 1; $i <=20; $i++)  {
+            $output_array[$i]       = array("username" => "Username-$i", "status_message" => "🙅", "avatar" => "$base64");
+        }
+        $output_array["total"]      = $i - 1;
+        
+        echo json_encode($output_array);
+        exit();
     }
 ?>
